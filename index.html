@@ -6,7 +6,7 @@
   <title>KT GamerX Code Hub</title>
 
   <style>
-    /* ---------- Night mode colours (default) ---------- */
+    /* ---------- Night mode (default) ---------- */
     :root {
       --bg: #0b0b14;
       --card: #14142a;
@@ -19,7 +19,7 @@
       --ok: #2ecc71;
     }
 
-    /* ---------- Day mode colours ---------- */
+    /* ---------- Day mode ---------- */
     :root[data-theme="light"] {
       --bg: #f1f1fa;
       --card: #ffffff;
@@ -38,7 +38,7 @@
     }
 
     header {
-      padding: 20px 16px 8px;
+      padding: 60px 16px 8px;
       text-align: center;
     }
 
@@ -82,7 +82,6 @@
       border-color: var(--like);
     }
 
-    /* ---------- Day / Night switch ---------- */
     .theme-btn {
       position: fixed;
       top: 12px;
@@ -96,7 +95,6 @@
       color: var(--text);
       background: var(--card);
       border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
     }
 
     /* ---------- Add form ---------- */
@@ -126,11 +124,11 @@
 
     .hint {
       margin: 0;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
     }
 
-    /* ---------- Card grid ---------- */
+    /* ---------- Cards ---------- */
     main {
       max-width: 1000px;
       margin: 0 auto;
@@ -157,8 +155,13 @@
     .card-body { padding: 12px; }
 
     .card-title {
-      margin-bottom: 8px;
       font-weight: 700;
+    }
+
+    .card-by {
+      margin: 2px 0 8px;
+      font-size: 12px;
+      color: var(--muted);
     }
 
     .card-code {
@@ -185,7 +188,6 @@
 
 <body>
 
-  <!-- Day / Night button -->
   <button id="themeToggle" class="btn theme-btn" aria-label="Switch day / night">🌙</button>
 
   <header>
@@ -194,75 +196,84 @@
     <button id="toggleForm" class="btn btn-blue">+ Add your code here</button>
   </header>
 
-  <!-- Form to add your own code -->
   <form id="addForm" hidden>
+    <input id="nameInput" type="text" placeholder="Your name" maxlength="30" required>
     <input id="titleInput" type="text" placeholder="Title (e.g. Xayne + Oscar)" maxlength="60" required>
     <textarea id="codeInput" rows="3" placeholder="Paste code here" maxlength="600" required></textarea>
     <input id="imageInput" type="file" accept="image/*" required>
     <p id="formMessage" class="hint"></p>
-    <button type="submit" class="btn btn-gold">Add</button>
+    <button id="submitBtn" type="submit" class="btn btn-gold">Add</button>
   </form>
 
-  <!-- Cards appear here -->
   <main id="grid"></main>
 
-  <script>
+  <script type="module">
     // =====================================================
-    //  1. YOUR CARDS  (edit titles / codes / images here)
+    //  1. FIREBASE  (paste YOUR values from step 4)
+    // =====================================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "PASTE_HERE",
+      authDomain: "PASTE_HERE",
+      projectId: "PASTE_HERE",
+      storageBucket: "PASTE_HERE",
+      messagingSenderId: "PASTE_HERE",
+      appId: "PASTE_HERE"
+    };
+
+    const isSetUp = firebaseConfig.apiKey !== "PASTE_HERE";
+    let db = null;
+
+    if (isSetUp) {
+      db = getFirestore(initializeApp(firebaseConfig));
+    }
+
+    // =====================================================
+    //  2. BUILT-IN CARDS  (images are in the images folder)
     // =====================================================
     const CARDS = [
-      { id: "c1", title: "Chrono vs Xayne", image: "images/1.jpg",
+      { id: "c1", title: "Chrono vs Xayne", image: "images/1.jpg", by: "KT GamerX",
         code: "#FF#cGl/YXVzeXFwf3V5cWRxfnVuY2V5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rxdw==" },
 
-      { id: "c2", title: "Xayne + Oscar", image: "images/2.jpg",
+      { id: "c2", title: "Xayne + Oscar", image: "images/2.jpg", by: "KT GamerX",
         code: "#FF#cGl7bXV9eXFwf3V5cGJxfnVsZGV5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rxdw==" },
 
-      { id: "c3", title: "K + Skyler", image: "images/3.jpg",
+      { id: "c3", title: "K + Skyler", image: "images/3.jpg", by: "KT GamerX",
         code: "#FF#cGl4aXV6eXZwf3V5dGJxeXVtY2V5YnR/fGl1e291cGlyb3B0cHtiamRlf3RxeA==" },
 
-      { id: "c4", title: "Orion + A124", image: "images/4.jpg",
+      { id: "c4", title: "Orion + A124", image: "images/4.jpg", by: "KT GamerX",
         code: "#FF#cGl6a3V6eXR9f3V5dGJxfnVrbGV5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rwfw==" },
 
-      { id: "c5", title: "Santino + Xayne", image: "images/5.jpg",
+      { id: "c5", title: "Santino + Xayne", image: "images/5.jpg", by: "KT GamerX",
         code: "#FF#cGl6aXV9eXFwf3V5dGJxfnVrbGV5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rwfw==" },
 
-      { id: "c6", title: "Dimitri + Xayne", image: "images/6.jpg",
+      { id: "c6", title: "Dimitri + Xayne", image: "images/6.jpg", by: "KT GamerX",
         code: "#FF#cGl4bnV+eXFwf3J5cWRxe3VuY2V5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rxdw==" },
 
-      { id: "c7", title: "Oscar + Tatsuya", image: "images/7.jpg",
+      { id: "c7", title: "Oscar + Tatsuya", image: "images/7.jpg", by: "KT GamerX",
         code: "#FF#cGl7bXV9eXB8f3V5dmdxfHVtbWV5YnR/fGl1e291cWlyb3B0cHtiamRlf3RwfQ==" }
     ];
 
     // =====================================================
-    //  2. SAVING (stored in this browser only)
+    //  3. STATE
     // =====================================================
-    const STORE_CARDS = "kt_user_cards";
-    const STORE_LIKES = "kt_likes";
-    const STORE_MINE  = "kt_likes_mine";
+    let sharedCards = [];       // cards added by everyone (from Firebase)
+    let likeCount = {};         // { cardId: number }
+    let myLikes = new Set();    // cards this device liked
 
-    function load(key, fallback) {
-      try {
-        return JSON.parse(localStorage.getItem(key)) ?? fallback;
-      } catch (e) {
-        return fallback;
-      }
+    // Each device gets a random id so one device = one like per card
+    let deviceId = localStorage.getItem("kt_device");
+    if (!deviceId) {
+      deviceId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("kt_device", deviceId);
     }
 
-    function save(key, value) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-        return true;
-      } catch (e) {
-        return false; // storage full or blocked
-      }
-    }
-
-    let userCards = load(STORE_CARDS, []);       // cards added by the user
-    let likes = load(STORE_LIKES, {});           // { cardId: number of likes }
-    let liked = new Set(load(STORE_MINE, []));   // cards this person liked
-
     // =====================================================
-    //  3. DAY / NIGHT SWITCH
+    //  4. DAY / NIGHT SWITCH
     // =====================================================
     const themeBtn = document.getElementById("themeToggle");
     const savedTheme = localStorage.getItem("kt_theme");
@@ -279,15 +290,14 @@
       const current = document.documentElement.getAttribute("data-theme");
       const next = current === "light" ? "dark" : "light";
       applyTheme(next);
-      try { localStorage.setItem("kt_theme", next); } catch (e) {}
+      localStorage.setItem("kt_theme", next);
     });
 
     // =====================================================
-    //  4. SHOW THE CARDS
+    //  5. SHOW THE CARDS
     // =====================================================
     const grid = document.getElementById("grid");
 
-    // Makes text safe to put inside HTML
     function escapeHtml(text) {
       const div = document.createElement("div");
       div.textContent = text;
@@ -295,18 +305,19 @@
     }
 
     function cardHtml(card) {
-      const count = likes[card.id] || 0;
-      const isLiked = liked.has(card.id);
+      const count = likeCount[card.id] || 0;
+      const isLiked = myLikes.has(card.id);
 
       return `
         <article class="card">
           <img src="${escapeHtml(card.image)}" alt="${escapeHtml(card.title)}">
           <div class="card-body">
             <div class="card-title">${escapeHtml(card.title)}</div>
+            <div class="card-by">Added by ${escapeHtml(card.by || "Unknown")}</div>
             <div class="card-code">${escapeHtml(card.code)}</div>
             <div class="card-actions">
-              <button class="btn btn-gold" data-copy="${card.id}">Copy</button>
-              <button class="btn btn-like ${isLiked ? "liked" : ""}" data-like="${card.id}">
+              <button class="btn btn-gold" data-copy="${escapeHtml(card.id)}">Copy</button>
+              <button class="btn btn-like ${isLiked ? "liked" : ""}" data-like="${escapeHtml(card.id)}">
                 ${isLiked ? "♥" : "♡"} ${count}
               </button>
             </div>
@@ -315,18 +326,45 @@
     }
 
     function render() {
-      grid.innerHTML = [...CARDS, ...userCards].map(cardHtml).join("");
+      grid.innerHTML = [...CARDS, ...sharedCards].map(cardHtml).join("");
+    }
+
+    render();
+
+    // =====================================================
+    //  6. LIVE DATA FROM FIREBASE
+    // =====================================================
+    if (db) {
+      // All shared cards, oldest first
+      onSnapshot(collection(db, "cards"), (snapshot) => {
+        sharedCards = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        sharedCards.sort((a, b) => (a.at || 0) - (b.at || 0));
+        render();
+      });
+
+      // All likes
+      onSnapshot(collection(db, "likes"), (snapshot) => {
+        likeCount = {};
+        myLikes = new Set();
+
+        snapshot.docs.forEach((d) => {
+          const like = d.data();
+          likeCount[like.card] = (likeCount[like.card] || 0) + 1;
+          if (like.device === deviceId) myLikes.add(like.card);
+        });
+
+        render();
+      });
     }
 
     // =====================================================
-    //  5. COPY BUTTON
+    //  7. COPY
     // =====================================================
     async function copyText(text) {
       try {
         await navigator.clipboard.writeText(text);
         return true;
       } catch (e) {
-        // Backup method for older browsers
         const area = document.createElement("textarea");
         area.value = text;
         document.body.appendChild(area);
@@ -338,16 +376,15 @@
     }
 
     // =====================================================
-    //  6. CLICKS (copy + like)
+    //  8. CLICKS (copy + like)
     // =====================================================
     grid.addEventListener("click", async (event) => {
       const copyBtn = event.target.closest("[data-copy]");
       const likeBtn = event.target.closest("[data-like]");
-      const allCards = [...CARDS, ...userCards];
 
       // ----- Copy -----
       if (copyBtn) {
-        const card = allCards.find((c) => c.id === copyBtn.dataset.copy);
+        const card = [...CARDS, ...sharedCards].find((c) => c.id === copyBtn.dataset.copy);
         const ok = await copyText(card.code);
 
         copyBtn.textContent = ok ? "Copied ✓" : "Copy failed";
@@ -359,36 +396,40 @@
         }, 1500);
       }
 
-      // ----- Like / Unlike -----
+      // ----- Like / Unlike (saved online for everyone) -----
       if (likeBtn) {
-        const id = likeBtn.dataset.like;
-
-        if (liked.has(id)) {
-          liked.delete(id);
-          likes[id] = Math.max(0, (likes[id] || 1) - 1);
-        } else {
-          liked.add(id);
-          likes[id] = (likes[id] || 0) + 1;
+        if (!db) {
+          alert("Firebase is not set up yet, so likes can't be saved.");
+          return;
         }
 
-        save(STORE_LIKES, likes);
-        save(STORE_MINE, [...liked]);
-        render();
+        const cardId = likeBtn.dataset.like;
+        const likeRef = doc(db, "likes", cardId + "_" + deviceId);
+
+        if (myLikes.has(cardId)) {
+          await deleteDoc(likeRef);
+        } else {
+          await setDoc(likeRef, { card: cardId, device: deviceId });
+        }
       }
     });
 
     // =====================================================
-    //  7. ADD YOUR OWN CODE
+    //  9. ADD YOUR OWN CODE
     // =====================================================
     const form = document.getElementById("addForm");
     const message = document.getElementById("formMessage");
+    const submitBtn = document.getElementById("submitBtn");
+    const nameInput = document.getElementById("nameInput");
 
-    // Open / close the form
+    // Remember the person's name
+    nameInput.value = localStorage.getItem("kt_name") || "";
+
     document.getElementById("toggleForm").addEventListener("click", () => {
       form.hidden = !form.hidden;
     });
 
-    // Makes the chosen image smaller so it fits in storage
+    // Make the picked image smaller so it fits in the database
     function shrinkImage(file, maxWidth = 640) {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -407,38 +448,44 @@
       });
     }
 
-    // When the form is submitted
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+
+      if (!db) {
+        message.textContent = "Firebase is not set up yet. Paste your firebaseConfig first.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      message.textContent = "Uploading...";
 
       try {
         const file = document.getElementById("imageInput").files[0];
         const image = await shrinkImage(file);
+        const name = nameInput.value.trim();
 
-        userCards.push({
-          id: "u" + Date.now(),
+        localStorage.setItem("kt_name", name);
+
+        const newId = "u" + Date.now() + Math.random().toString(36).slice(2, 6);
+
+        await setDoc(doc(db, "cards", newId), {
           title: document.getElementById("titleInput").value.trim(),
           code: document.getElementById("codeInput").value.trim(),
-          image: image
+          by: name,
+          image: image,
+          at: Date.now()
         });
 
-        if (save(STORE_CARDS, userCards)) {
-          message.textContent = "Added!";
-        } else {
-          message.textContent = "Added, but storage is full so it won't stay after refresh.";
-        }
-
-        form.reset();
-        render();
+        message.textContent = "Added! Everyone can see it now.";
+        document.getElementById("titleInput").value = "";
+        document.getElementById("codeInput").value = "";
+        document.getElementById("imageInput").value = "";
       } catch (e) {
-        message.textContent = "Could not add that image. Try another one.";
+        message.textContent = "Could not add. Check your Firebase rules and try again.";
       }
-    });
 
-    // =====================================================
-    //  8. START
-    // =====================================================
-    render();
+      submitBtn.disabled = false;
+    });
   </script>
 </body>
 </html>
