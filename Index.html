@@ -1,1 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KT GamerX Code Hub</title>
 
+  <style>
+    /* ---------- Colours: night mode (default) ---------- */
+    :root {
+      --bg: #0b0d17;
+      --surface: #141829;
+      --surface-2: #1b2036;
+      --text: #eef0ff;
+      --muted: #8d93b8;
+      --border: #272c48;
+      --accent: #ffb400;
+      --accent-text: #1a1200;
+      --blue: #4aa3ff;
+      --like: #ff4d6d;
+      --ok: #2ecc71;
+      --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    /* ---------- Colours: day mode ---------- */
+    :root[data-theme="light"] {
+      --bg: #f3f4fb;
+      --surface: #ffffff;
+      --surface-2: #f0f1fa;
+      --text: #151833;
+      --muted: #666b8f;
+      --border: #dfe1f0;
+      --shadow: 0 6px 24px rgba(30, 35, 90, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s ease;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    .brand span { color: var(--accent); }
+
+    /* ---------- Buttons ---------- */
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+      transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    button:active { transform: scale(0.96); }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      border-radius: 50%;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 11px 16px;
+      font-weight: 700;
+      border-radius: 10px;
+    }
+
+    .btn-primary { background: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-primary.copied { background: var(--ok); color: #032211; }
+
+    .btn-blue { background: var(--blue); color: #00122a; }
+
+    .btn-like {
+      min-width: 78px;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .btn-like.liked { color: var(--like); border-color: var(--like); }
+
+    .btn-delete {
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .btn-delete:hover { color: var(--like); border-color: var(--like); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 16px 8px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .tools {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tools input { flex: 1 1 220px; max-width: 360px; }
+
+    /* ---------- Inputs and form ---------- */
+    input, textarea {
+      font: inherit;
+      width: 100%;
+      padding: 11px 12px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(74, 163, 255, 0.2);
+    }
+
+    #addForm {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 520px;
+      margin: 16px auto 0;
+      padding: 16px;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      animation: rise 0.25s ease;
+    }
+
+    #addForm[hidden] { display: none; }
+
+    .form-message {
+      min-height: 18px;
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ---------- Card grid ---------- */
+    .grid {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 16px 14px 56px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      animation: rise 0.35s ease both;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      flex: none;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--accent-text);
+      background: linear-gradient(135deg, var(--accent), #ff7a00);
+      border-radius: 50%;
+    }
+
+    .card-title {
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .card-by {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-code {
+      max-height: 96px;
+      overflow: auto;
+      padding: 12px;
+      font: 12.5px ui-monospace, Menlo, Consolas, monospace;
+      word-break: break-all;
+      color: var(--muted);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card-actions .btn-primary { flex: 1; }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 40px 0;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    /* ---------- Toast (small popup) ---------- */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 30;
+      padding: 10px 18px;
+      font-weight: 600;
+      color: #032211;
+      background: var(--ok);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translate(-50%, 20px);
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    footer {
+      padding: 0 16px 28px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">KT <span>GamerX</span></div>
+    <button id="themeToggle" class="icon-btn" aria-label="Switch day or night mode">🌙</button>
+  </div>
+
+  <!-- Title, search and add button -->
+  <section class="hero">
+    <h1>Code Hub</h1>
+    <p>Tap Copy to grab a code. Like your favourites. Add your own.</p>
+
+    <div class="tools">
+      <input id="searchInput" type="search" placeholder="Search codes or names...">
+      <button id="toggleForm" class="btn btn-blue">+ Add your code</button>
+    </div>
+
+    <!-- Add form -->
+    <form id="addForm" hidden>
+      <input id="nameInput" type="text" placeholder="Your name" maxlength="30" required>
+      <input id="titleInput" type="text" placeholder="Title (e.g. Xayne + Oscar)" maxlength="60" required>
+      <textarea id="codeInput" rows="3" placeholder="Paste the code here" maxlength="600" required></textarea>
+      <p id="formMessage" class="form-message"></p>
+      <button type="submit" class="btn btn-primary">Add code</button>
+    </form>
+  </section>
+
+  <!-- Cards appear here -->
+  <main id="grid" class="grid"></main>
+
+  <footer>Codes added by you are saved on this device.</footer>
+
+  <div id="toast" class="toast">Copied ✓</div>
+
+  <script>
+    // =====================================================
+    //  1. BUILT-IN CODES (edit or add your own lines here)
+    // =====================================================
+    const BUILT_IN = [
+      {
+        id: "c1",
+        title: "Chrono vs Xayne",
+        by: "KT GamerX",
+        code: "#FF#cGl/YXVzeXFwf3V5cWRxfnVuY2V5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rxdw=="
+      },
+      {
+        id: "c2",
+        title: "Xayne + Oscar",
+        by: "KT GamerX",
+        code: "#FF#cGl7bXV9eXFwf3V5cGJxfnVsZGV5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rxdw=="
+      },
+      {
+        id: "c3",
+        title: "K + Skyler",
+        by: "KT GamerX",
+        code: "#FF#cGl4aXV6eXZwf3V5dGJxeXVtY2V5YnR/fGl1e291cGlyb3B0cHtiamRlf3RxeA=="
+      },
+      {
+        id: "c4",
+        title: "Orion + A124",
+        by: "KT GamerX",
+        code: "#FF#cGl6a3V6eXR9f3V5dGJxfnVrbGV5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rwfw=="
+      },
+      {
+        id: "c5",
+        title: "Santino + Xayne",
+        by: "KT GamerX",
+        code: "#FF#cGl6aXV9eXFwf3V5dGJxfnVrbGV5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rwfw=="
+      },
+      {
+        id: "c6",
+        title: "Dimitri + Xayne",
+        by: "KT GamerX",
+        code: "#FF#cGl4bnV+eXFwf3J5cWRxe3VuY2V5YnR/fGl1e291cGlyb3B0cHtiamRlf3Rxdw=="
+      },
+      {
+        id: "c7",
+        title: "Oscar + Tatsuya",
+        by: "KT GamerX",
+        code: "#FF#cGl7bXV9eXB8f3V5dmdxfHVtbWV5YnR/fGl1e291cWlyb3B0cHtiamRlf3RwfQ=="
+      }
+    ];
+
+    // =====================================================
+    //  2. SAVING (stored in this browser only)
+    // =====================================================
+    const KEY_CARDS = "kt_user_cards";
+    const KEY_LIKES = "kt_likes";
+    const KEY_MINE = "kt_likes_mine";
+    const KEY_NAME = "kt_name";
+    const KEY_THEME = "kt_theme";
+
+    function load(key, fallback) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key));
+        return value === null || value === undefined ? fallback : value;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function save(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (error) {
+        // Storage blocked or full. The page still works for this visit.
+      }
+    }
+
+    let userCards = load(KEY_CARDS, []);
+    let likeCount = load(KEY_LIKES, {});
+    let myLikes = new Set(load(KEY_MINE, []));
+    let searchText = "";
+
+    // =====================================================
+    //  3. PAGE ELEMENTS
+    // =====================================================
+    const grid = document.getElementById("grid");
+    const form = document.getElementById("addForm");
+    const message = document.getElementById("formMessage");
+    const searchInput = document.getElementById("searchInput");
+    const nameInput = document.getElementById("nameInput");
+    const themeBtn = document.getElementById("themeToggle");
+    const toast = document.getElementById("toast");
+
+    // =====================================================
+    //  4. DAY / NIGHT SWITCH
+    // =====================================================
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      themeBtn.textContent = theme === "light" ? "🌙" : "☀️";
+    }
+
+    const savedTheme = load(KEY_THEME, null);
+    const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+
+    applyTheme(savedTheme || (prefersLight ? "light" : "dark"));
+
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "light" ? "dark" : "light";
+      applyTheme(next);
+      save(KEY_THEME, next);
+    });
+
+    // =====================================================
+    //  5. SHOWING THE CARDS
+    // =====================================================
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function cardHtml(card, index) {
+      const count = likeCount[card.id] || 0;
+      const isLiked = myLikes.has(card.id);
+      const initial = escapeHtml((card.by || "?").trim().charAt(0).toUpperCase());
+      const deleteBtn = card.mine
+        ? `<button class="btn-delete" data-delete="${card.id}">Delete</button>`
+        : "";
+
+      return `
+        <article class="card" style="animation-delay: ${Math.min(index, 10) * 40}ms">
+          <div class="card-head">
+            <div class="avatar">${initial}</div>
+            <div>
+              <div class="card-title">${escapeHtml(card.title)}</div>
+              <div class="card-by">Added by ${escapeHtml(card.by || "Unknown")}</div>
+            </div>
+          </div>
+
+          <div class="card-code">${escapeHtml(card.code)}</div>
+
+          <div class="card-actions">
+            <button class="btn btn-primary" data-copy="${card.id}">Copy</button>
+            <button class="btn btn-like ${isLiked ? "liked" : ""}" data-like="${card.id}">
+              ${isLiked ? "♥" : "♡"} ${count}
+            </button>
+            ${deleteBtn}
+          </div>
+        </article>`;
+    }
+
+    function allCards() {
+      const mine = userCards.map((card) => ({ ...card, mine: true }));
+      return [...BUILT_IN, ...mine];
+    }
+
+    function render() {
+      const query = searchText.trim().toLowerCase();
+
+      const visible = allCards().filter((card) => {
+        const text = (card.title + " " + card.by + " " + card.code).toLowerCase();
+        return text.includes(query);
+      });
+
+      if (visible.length === 0) {
+        grid.innerHTML = '<div class="empty">No codes found.</div>';
+        return;
+      }
+
+      grid.innerHTML = visible.map(cardHtml).join("");
+    }
+
+    searchInput.addEventListener("input", () => {
+      searchText = searchInput.value;
+      render();
+    });
+
+    // =====================================================
+    //  6. COPY
+    // =====================================================
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        // Backup method for older browsers
+        const area = document.createElement("textarea");
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+
+        let ok = false;
+        try {
+          ok = document.execCommand("copy");
+        } catch (err) {
+          ok = false;
+        }
+
+        area.remove();
+        return ok;
+      }
+    }
+
+    let toastTimer = null;
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    // =====================================================
+    //  7. BUTTON CLICKS (copy, like, delete)
+    // =====================================================
+    grid.addEventListener("click", async (event) => {
+      const copyBtn = event.target.closest("[data-copy]");
+      const likeBtn = event.target.closest("[data-like]");
+      const deleteBtn = event.target.closest("[data-delete]");
+
+      // ----- Copy -----
+      if (copyBtn) {
+        const card = allCards().find((c) => c.id === copyBtn.dataset.copy);
+        const ok = await copyText(card.code);
+
+        copyBtn.textContent = ok ? "Copied ✓" : "Copy failed";
+        copyBtn.classList.toggle("copied", ok);
+        showToast(ok ? "Code copied ✓" : "Could not copy. Press and hold the code.");
+
+        setTimeout(() => {
+          copyBtn.textContent = "Copy";
+          copyBtn.classList.remove("copied");
+        }, 1500);
+      }
+
+      // ----- Like / Unlike -----
+      if (likeBtn) {
+        const id = likeBtn.dataset.like;
+
+        if (myLikes.has(id)) {
+          myLikes.delete(id);
+          likeCount[id] = Math.max(0, (likeCount[id] || 1) - 1);
+        } else {
+          myLikes.add(id);
+          likeCount[id] = (likeCount[id] || 0) + 1;
+        }
+
+        save(KEY_LIKES, likeCount);
+        save(KEY_MINE, [...myLikes]);
+        render();
+      }
+
+      // ----- Delete (only cards you added) -----
+      if (deleteBtn) {
+        if (confirm("Delete this code?")) {
+          userCards = userCards.filter((c) => c.id !== deleteBtn.dataset.delete);
+          save(KEY_CARDS, userCards);
+          render();
+        }
+      }
+    });
+
+    // =====================================================
+    //  8. ADD YOUR OWN CODE
+    // =====================================================
+    nameInput.value = load(KEY_NAME, "");
+
+    document.getElementById("toggleForm").addEventListener("click", () => {
+      form.hidden = !form.hidden;
+      if (!form.hidden) nameInput.focus();
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const name = nameInput.value.trim();
+      const title = document.getElementById("titleInput").value.trim();
+      const code = document.getElementById("codeInput").value.trim();
+
+      if (!name || !title || !code) {
+        message.textContent = "Please fill in all the fields.";
+        return;
+      }
+
+      userCards.unshift({
+        id: "u" + Date.now(),
+        title: title,
+        by: name,
+        code: code
+      });
+
+      save(KEY_CARDS, userCards);
+      save(KEY_NAME, name);
+
+      document.getElementById("titleInput").value = "";
+      document.getElementById("codeInput").value = "";
+      message.textContent = "Added!";
+      showToast("Code added ✓");
+      render();
+    });
+
+    // =====================================================
+    //  9. START
+    // =====================================================
+    render();
+  </script>
+</body>
+</html>
